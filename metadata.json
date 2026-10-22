@@ -1,0 +1,6 @@
+{
+  "name": "UIU CSE Course & Faculty Selection Assistant",
+  "description": "Smart section selection, top faculty reviewer ranking, schedule conflict detector, and custom timetable builder for UIU CSE students.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
