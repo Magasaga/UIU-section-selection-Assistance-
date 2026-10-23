@@ -6,10 +6,12 @@ import {
   AlertTriangle, 
   Sparkles, 
   Award,
-  Calendar
+  Calendar,
+  Info
 } from 'lucide-react';
 import { CourseFacultyRecommendation, Section } from '../types';
 import { detectConflictBetweenSections } from '../utils/schedulerEngine';
+import { getCourseShortName } from '../utils/courseData';
 
 interface TopFacultyDashboardProps {
   recommendations: CourseFacultyRecommendation[];
@@ -45,7 +47,36 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* Warning Message 1: Section selection clarification */}
+      <div className={`p-4 rounded-2xl border text-xs flex items-start gap-3 transition-colors ${
+        isLight 
+          ? 'bg-amber-50/90 border-amber-200 text-amber-900' 
+          : 'bg-amber-950/30 border-amber-500/30 text-amber-200'
+      }`}>
+        <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="leading-relaxed space-y-1">
+          <p className="font-bold">
+            Important Notice for Students:
+          </p>
+          <p>
+            You cannot register or enroll in sections directly on this website. This system only helps you choose the best faculty, avoid time conflicts, and generate your routine. Use your selected sections to register officially on UCAM.
+          </p>
+        </div>
+      </div>
+
+      {/* Warning Message 2: Phase 1 Faculty Review text */}
+      <div className={`p-3 rounded-xl border text-xs flex items-center gap-2.5 transition-colors ${
+        isLight 
+          ? 'bg-slate-50 border-slate-200 text-slate-700' 
+          : 'bg-slate-900 border-slate-800 text-slate-300'
+      }`}>
+        <Info className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+        <span>
+          <strong>Note on Faculty Ratings:</strong> Some faculty ratings may be invalid or outdated. Please double-check or ask some of your seniors before making final section choices.
+        </span>
+      </div>
+
       {/* Header */}
       <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border transition-colors ${
         isLight ? 'bg-white border-slate-200 shadow-xs' : 'bg-slate-900 border-slate-800'
@@ -58,7 +89,7 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
             <span>Top Faculty Recommendations</span>
           </h2>
           <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-            Ranked by high review count and verified student ratings.
+            Prioritizing faculty with high review volume (&gt; 8 reviews) and top student ratings.
           </p>
         </div>
 
@@ -79,6 +110,7 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
       <div className="space-y-5">
         {recommendations.map((rec, courseIdx) => {
           const chosenSectionForCourse = selectedSections.find(s => s.courseCode === rec.courseCode);
+          const shortName = getCourseShortName(rec.courseCode, rec.courseTitle, rec.isLab);
 
           return (
             <div
@@ -87,7 +119,7 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
                 isLight ? 'bg-white border-slate-200' : 'bg-slate-800/80 border-slate-700/80 shadow-xl'
               }`}
             >
-              {/* Course Header */}
+              {/* Course Header with Short Name */}
               <div className={`p-4 sm:p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                 isLight ? 'bg-slate-50 border-slate-100' : 'bg-slate-900/90 border-slate-700/70'
               }`}>
@@ -97,15 +129,20 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
                   </span>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`font-extrabold text-base font-mono ${
-                        isLight ? 'text-slate-900' : 'text-white'
+                      <span className={`font-extrabold text-sm px-2 py-0.5 rounded font-sans ${
+                        isLight ? 'bg-indigo-100 text-indigo-900' : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
+                      }`}>
+                        {shortName}
+                      </span>
+                      <span className={`font-mono text-sm ${
+                        isLight ? 'text-slate-600' : 'text-slate-400'
                       }`}>
                         {rec.courseCode}
                       </span>
                       <span className={`text-xs font-semibold ${
                         isLight ? 'text-slate-700' : 'text-slate-300'
                       }`}>
-                        {rec.courseTitle}
+                        • {rec.courseTitle}
                       </span>
                       <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${
                         rec.isLab 
@@ -124,7 +161,7 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* Short note badge if fewer than 4 faculties as requested */}
+                {/* Short note badge if fewer than 4 faculties */}
                 {rec.note && (
                   <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium self-start sm:self-auto border ${
                     isLight 
@@ -137,7 +174,7 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
                 )}
               </div>
 
-              {/* Faculty Cards Grid - Reviews completely hidden on web as requested */}
+              {/* Faculty Cards Grid */}
               <div className="p-4 sm:p-5 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {rec.topFaculty.map((fac, facIdx) => {
@@ -156,7 +193,7 @@ export const TopFacultyDashboard: React.FC<TopFacultyDashboardProps> = ({
                             : 'bg-slate-900/60 border-slate-800/90 hover:border-slate-700'
                         }`}
                       >
-                        {/* Faculty Meta & Rating (No review count shown on web) */}
+                        {/* Faculty Meta & Rating */}
                         <div className={`flex items-start justify-between gap-2 pb-3 border-b ${
                           isLight ? 'border-slate-200' : 'border-slate-800'
                         }`}>

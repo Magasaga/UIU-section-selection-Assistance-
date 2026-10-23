@@ -48,11 +48,6 @@ export function getFacultyRating(facultyName: string): FacultyRating | null {
  * User Rule:
  * "look a teacher got 10/10 but only few review like 2 or 3 he won't be the best faculty
  * the best faculty will be this guy who got more than 8 review and higher rating"
- *
- * Ranking criteria:
- * Tier 1: Faculty with > 8 reviews, ranked by highest rating and review depth
- * Tier 2: Faculty with 4-8 reviews
- * Tier 3: Faculty with <= 3 reviews (even if 10.0, they rank below teachers with > 8 reviews)
  */
 export function calculateFacultyScore(rating: number, reviews: number): number {
   if (rating <= 0) return 0;
@@ -67,6 +62,100 @@ export function calculateFacultyScore(rating: number, reviews: number): number {
     // Low reviews (<= 3): cannot outrank verified professors with > 8 reviews
     return 20 + (rating * 2) + reviews;
   }
+}
+
+/**
+ * Short names mapping for UIU CSE courses as requested by user:
+ * e.g. Computer Networks -> CN, Computer Networks Lab -> CN Lab,
+ * Structured Programming Language -> SPL, SPL Lab, etc.
+ */
+const shortNameMap: Record<string, string> = {
+  // CSE Core Courses
+  'CSE 1110': 'ICS',
+  'CSE 1111': 'SPL',
+  'CSE 1112': 'SPL Lab',
+  'CSE 1115': 'OOP',
+  'CSE 1116': 'OOP Lab',
+  'CSE 1325': 'DLD',
+  'CSE 1326': 'DLD Lab',
+  'CSE 2118': 'AOOP Lab',
+  'CSE 2213': 'DM',
+  'CSE 2215': 'DSA I',
+  'CSE 2216': 'DSA I Lab',
+  'CSE 2217': 'DSA II',
+  'CSE 2218': 'DSA II Lab',
+  'CSE 2233': 'TOC',
+  'CSE 3313': 'CA',
+  'CSE 3411': 'SAD',
+  'CSE 3412': 'SAD Lab',
+  'CSE 3421': 'SE',
+  'CSE 3422': 'SE Lab',
+  'CSE 3521': 'DBMS',
+  'CSE 3522': 'DBMS Lab',
+  'CSE 3711': 'CN',
+  'CSE 3712': 'CN Lab',
+  'CSE 3715': 'DC',
+  'CSE 3811': 'AI',
+  'CSE 3812': 'AI Lab',
+  'CSE 4165': 'Web Prog',
+  'CSE 4181': 'Mobile App',
+  'CSE 4325': 'Microprocessor',
+  'CSE 4326': 'Microprocessor Lab',
+  'CSE 4451': 'HCI',
+  'CSE 4509': 'OS',
+  'CSE 4510': 'OS Lab',
+  'CSE 4531': 'Comp Security',
+  'CSE 4587': 'Cloud Computing',
+  'CSE 4611': 'Compiler',
+  'CSE 4777': 'Net Security',
+  'CSE 4811': 'NLP',
+  'CSE 4813': 'Deep Learning',
+  'CSE 4883': 'DIP',
+  'CSE 4889': 'ML',
+  'CSE 4891': 'Data Mining',
+  'CSE 4945': 'UI Design',
+  'CSE 4000A': 'FYDP I',
+  'CSE 4125': 'Ethical Hacking',
+  'CSE 4399': 'Embedded ML',
+
+  // Basic Sciences & Humanities
+  'MATH 1151': 'Calculus',
+  'MATH 2183': 'CLA',
+  'MATH 2201': 'CGVA',
+  'MATH 2205': 'Prob & Stat',
+  'PHY 2105': 'Physics',
+  'PHY 2106': 'Physics Lab',
+  'EEE 2113': 'Circuits',
+  'EEE 2123': 'Electronics',
+  'EEE 2124': 'Electronics Lab',
+  'EEE 4261': 'Green Comp',
+  'ENG 1011': 'English I',
+  'ENG 1013': 'English II',
+  'GED 1005': 'AI Literacy',
+  'BDS 1201': 'History BD',
+  'BIO 3105': 'Biology',
+  'IPE 3401': 'IOM',
+  'PMG 4101': 'PM',
+  'ECO 4101': 'Economics',
+  'ACT 2111': 'Accounting',
+  'SOC 2101': 'Society & Ethics',
+  'TEC 2499': 'Tech Entrepr'
+};
+
+export function getCourseShortName(courseCode: string, fallbackTitle?: string, isLab?: boolean): string {
+  const norm = courseCode.toUpperCase().replace(/\s+/g, ' ').trim();
+  if (shortNameMap[norm]) {
+    return shortNameMap[norm];
+  }
+  if (fallbackTitle) {
+    const isLabCourse = isLab || fallbackTitle.toLowerCase().includes('laboratory') || fallbackTitle.toLowerCase().includes('lab');
+    const cleaned = fallbackTitle.replace(/Laboratory|Lab/gi, '').trim();
+    const words = cleaned.split(/\s+/).filter(w => !['and', 'for', 'of', 'the', 'in', 'to'].includes(w.toLowerCase()));
+    let acronym = words.map(w => w[0]).join('').toUpperCase();
+    if (acronym.length < 2) acronym = cleaned.slice(0, 10);
+    return isLabCourse ? `${acronym} Lab` : acronym;
+  }
+  return isLab ? `${courseCode} Lab` : courseCode;
 }
 
 /**
@@ -99,7 +188,6 @@ export function getTrimesterNumber(courseCode: string): number {
   // Trimester 12 & Capstone/Electives
   if (code.includes('CSE 4000A') || code.includes('CSE 4611') || code.includes('CSE 4889') || code.includes('CSE 4891') || code.includes('CSE 4811') || code.includes('CSE 4813') || code.includes('CSE 4181') || code.includes('CSE 4587') || code.includes('CSE 4945')) return 12;
 
-  // Fallback by course number
   const numMatch = courseCode.match(/\d{4}/);
   if (numMatch) {
     const num = parseInt(numMatch[0], 10);
@@ -150,7 +238,6 @@ export function getRankedFacultyForCourse(courseCode: string): RankedFaculty[] {
   const course = getCourseByCode(courseCode);
   if (!course) return [];
 
-  // Group sections by faculty
   const facultySectionsMap = new Map<string, Section[]>();
   course.sections.forEach(sec => {
     const fName = sec.facultyName || 'TBA';
@@ -195,11 +282,8 @@ export function getRankedFacultyForCourse(courseCode: string): RankedFaculty[] {
 
   // Sort: Teachers with > 8 reviews and higher rating come first
   rankedList.sort((a, b) => {
-    // Compare calculated score which separates > 8 reviews from few reviews
     if (b.score !== a.score) return b.score - a.score;
-    // Then rating
     if (b.rating !== a.rating) return b.rating - a.rating;
-    // Then reviews
     return (b.reviews || 0) - (a.reviews || 0);
   });
 

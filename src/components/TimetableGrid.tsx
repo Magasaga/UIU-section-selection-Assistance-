@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Section } from '../types';
 import { findScheduleConflicts, getDaysList, parseTimeToMinutes, getAlternativeSections } from '../utils/schedulerEngine';
-import { getFacultyRating } from '../utils/courseData';
+import { getFacultyRating, getCourseShortName } from '../utils/courseData';
 
 interface TimetableGridProps {
   selectedSections: Section[];
@@ -225,11 +225,18 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                         </div>
 
                         {/* Course Code & Title */}
-                        <h4 className={`font-bold text-sm font-mono leading-tight ${
-                          isLight ? 'text-slate-900' : 'text-white'
-                        }`}>
-                          {sec.courseCode}
-                        </h4>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`px-1.5 py-0.5 rounded text-[11px] font-extrabold font-mono ${
+                            isLight ? 'bg-indigo-100 text-indigo-800' : 'bg-indigo-900/60 text-indigo-300'
+                          }`}>
+                            {getCourseShortName(sec.courseCode, sec.title, sec.isLab)}
+                          </span>
+                          <span className={`font-mono text-xs font-semibold ${
+                            isLight ? 'text-slate-700' : 'text-slate-300'
+                          }`}>
+                            {sec.courseCode}
+                          </span>
+                        </div>
                         <p className={`text-[11px] truncate mt-0.5 ${
                           isLight ? 'text-slate-600' : 'text-slate-300'
                         }`}>
@@ -305,7 +312,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
               <div>
                 <h3 className="font-bold text-base flex items-center gap-2">
                   <ArrowRightLeft className="w-5 h-5 text-indigo-500" />
-                  <span>Switch Section for {switchingSection.courseCode}</span>
+                  <span>Switch Section for {getCourseShortName(switchingSection.courseCode, switchingSection.title, switchingSection.isLab)} ({switchingSection.courseCode})</span>
                 </h3>
                 <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                   Currently: Section <strong className={isLight ? 'text-slate-900' : 'text-white'}>{switchingSection.section}</strong> ({switchingSection.facultyName} • {switchingSection.days} {switchingSection.time1})

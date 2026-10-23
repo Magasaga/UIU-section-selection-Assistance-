@@ -8,10 +8,12 @@ import {
   AlertCircle, 
   Star, 
   ArrowRight,
-  Info
+  Info,
+  AlertTriangle
 } from 'lucide-react';
 import { Section, CustomSchedulePreferences, GeneratedScheduleSolution } from '../types';
 import { solveCustomSchedule } from '../utils/schedulerEngine';
+import { getCourseShortName } from '../utils/courseData';
 
 interface CustomSchedulingProps {
   selectedCourseCodes: string[];
@@ -85,6 +87,23 @@ export const CustomScheduling: React.FC<CustomSchedulingProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Important User Warning 1: System Purpose & Direct Registration Notice */}
+      <div className={`p-4 rounded-2xl border text-xs flex items-start gap-3 transition-colors ${
+        isLight 
+          ? 'bg-amber-50/80 border-amber-200 text-amber-900' 
+          : 'bg-amber-950/30 border-amber-500/30 text-amber-200'
+      }`}>
+        <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="leading-relaxed space-y-1">
+          <p className="font-bold">
+            Important Notice for Students:
+          </p>
+          <p>
+            You cannot register or enroll in sections directly on this website. Our system is designed solely to help you organize clash-free routine combinations and choose the best faculty. Use these generated sections to complete your official registration on UCAM.
+          </p>
+        </div>
+      </div>
+
       {/* Header & Controls */}
       <div className={`rounded-2xl p-5 sm:p-6 border shadow-sm transition-colors ${
         isLight ? 'bg-white border-slate-200' : 'bg-slate-800/80 border-slate-700/80 shadow-xl'
@@ -279,6 +298,20 @@ export const CustomScheduling: React.FC<CustomSchedulingProps> = ({
           </span>
         </div>
 
+        {/* Faculty Review Phase 2 Warning (When system provides routine of best faculty) as requested by user */}
+        {solutions.length > 0 && (
+          <div className={`p-3 rounded-xl border text-xs flex items-center gap-2.5 transition-colors ${
+            isLight 
+              ? 'bg-amber-50/70 border-amber-200 text-amber-900' 
+              : 'bg-amber-950/30 border-amber-500/30 text-amber-200'
+          }`}>
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <span>
+              <strong>Note on Faculty Ratings:</strong> Some faculty ratings may be invalid or outdated. Please double-check or ask some of your seniors before making final section choices.
+            </span>
+          </div>
+        )}
+
         {selectedCourseCodes.length === 0 ? (
           <div className={`p-8 rounded-2xl border text-center ${
             isLight ? 'bg-white border-slate-200 text-slate-500' : 'bg-slate-800/80 border-slate-700 text-slate-400'
@@ -361,41 +394,53 @@ export const CustomScheduling: React.FC<CustomSchedulingProps> = ({
                       </div>
                     </div>
 
-                    {/* Rating badge (no reviews shown on web) */}
+                    {/* Rating badge */}
                     <div className="flex items-center gap-1 text-xs font-bold font-mono text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/30">
                       <Star className="w-3 h-3 fill-emerald-500" />
                       <span>Avg {sol.averageFacultyRating}/10</span>
                     </div>
                   </div>
 
-                  {/* Section Breakdown List */}
+                  {/* Section Breakdown List with SHORT COURSE NAME shown! e.g. CN, CN Lab, SPL */}
                   <div className="mt-3 space-y-2">
-                    {sol.sections.map(sec => (
-                      <div
-                        key={sec.id}
-                        className={`p-2 rounded-lg border text-xs flex items-center justify-between ${
-                          isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/60 border-slate-800'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center font-mono">
-                            {sec.section}
-                          </span>
-                          <div>
-                            <span className={`font-bold font-mono mr-1.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                              {sec.courseCode}
+                    {sol.sections.map(sec => {
+                      const shortName = getCourseShortName(sec.courseCode, sec.title, sec.isLab);
+
+                      return (
+                        <div
+                          key={sec.id}
+                          className={`p-2.5 rounded-lg border text-xs flex items-center justify-between ${
+                            isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/60 border-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center font-mono flex-shrink-0">
+                              {sec.section}
                             </span>
-                            <span className={`text-[11px] ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-                              {sec.facultyName}
-                            </span>
+                            <div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {/* Short name prominent as requested by user */}
+                                <span className={`font-bold font-sans ${isLight ? 'text-indigo-900' : 'text-indigo-300'}`}>
+                                  {shortName}
+                                </span>
+                                <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                                  isLight ? 'bg-slate-200 text-slate-700' : 'bg-slate-800 text-slate-400'
+                                }`}>
+                                  {sec.courseCode}
+                                </span>
+                              </div>
+                              <span className={`text-[11px] block mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                                {sec.facultyName}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className={`text-right text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                            <span>{sec.days}</span> • <span>{sec.time1}</span>
                           </div>
                         </div>
-
-                        <div className={`text-right text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                          <span>{sec.days}</span> • <span>{sec.time1}</span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Apply Button */}

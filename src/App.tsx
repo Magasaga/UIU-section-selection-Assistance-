@@ -8,6 +8,7 @@ import { Navbar } from './components/Navbar';
 import { CourseSelector } from './components/CourseSelector';
 import { TopFacultyDashboard } from './components/TopFacultyDashboard';
 import { CustomScheduling } from './components/CustomSchedulingModal';
+import { EvaluationView } from './components/EvaluationView';
 import { FacultyDirectory } from './components/FacultyDirectoryModal';
 import { PdfPreviewModal } from './components/PdfPreviewModal';
 import { TableFallbackView } from './components/TableFallbackView';
@@ -29,19 +30,18 @@ import {
   Layers
 } from 'lucide-react';
 
-const STORAGE_KEY_COURSES = 'uiu_cse_selected_courses_v3';
-const STORAGE_KEY_SECTIONS = 'uiu_cse_selected_sections_v3';
-const STORAGE_KEY_THEME = 'uiu_cse_theme_v1';
+const STORAGE_KEY_COURSES = 'uiu_cse_selected_courses_v4';
+const STORAGE_KEY_SECTIONS = 'uiu_cse_selected_sections_v4';
+const STORAGE_KEY_THEME = 'uiu_cse_theme_v2';
 
 export default function App() {
-  // Theme state: BY DEFAULT LIGHT MODE as explicitly requested:
-  // "generally when user open it will be bydefault light mode"
+  // Theme state: Default Light Mode as requested
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
       if (savedTheme === 'dark' || savedTheme === 'light') return savedTheme;
     }
-    return 'light'; // default light mode
+    return 'light';
   });
 
   const toggleTheme = () => {
@@ -54,17 +54,17 @@ export default function App() {
     });
   };
 
-  // Navigation Menu: Course & Faculty, Custom Scheduling, Faculty Directory
-  const [activeTab, setActiveTab] = useState<'selection' | 'custom' | 'directory'>('selection');
+  // Navigation Menu: Course & Faculty, Custom Scheduling, Evaluation, Faculty Directory
+  const [activeTab, setActiveTab] = useState<'selection' | 'custom' | 'evaluation' | 'directory'>('selection');
 
-  // Timetable view toggle inside aside/main
+  // Timetable view toggle
   const [showTimetable, setShowTimetable] = useState(false);
 
   // Modal visibility states
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isTableFallbackOpen, setIsTableFallbackOpen] = useState(false);
 
-  // Empty on initial open as requested
+  // Selected courses (Empty on initial open)
   const [selectedCourseCodes, setSelectedCourseCodes] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -394,6 +394,13 @@ export default function App() {
           </div>
         )}
 
+        {/* New Evaluation Tab as requested */}
+        {activeTab === 'evaluation' && (
+          <div className="animate-fadeIn">
+            <EvaluationView theme={theme} />
+          </div>
+        )}
+
         {/* Faculty Directory Tab */}
         {activeTab === 'directory' && (
           <div className="animate-fadeIn">
@@ -410,7 +417,7 @@ export default function App() {
       }`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
-            UIU CSE Course & Faculty Selection Assistant • Fall 2026 Trimester
+            UIU CSE Section Assistant • Fall 2026 Trimester
           </span>
           <span className={isLight ? 'text-slate-400' : 'text-slate-600'}>
             United International University • Dept of CSE
