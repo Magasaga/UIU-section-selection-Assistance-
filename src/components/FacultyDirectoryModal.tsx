@@ -3,7 +3,8 @@ import {
   Users, 
   Search, 
   Star, 
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { allFacultyRatings } from '../utils/courseData';
 
@@ -98,6 +99,18 @@ export const FacultyDirectory: React.FC<FacultyDirectoryProps> = ({
             </button>
           )}
         </div>
+      </div>
+
+      {/* Note on Faculty Ratings as requested by user */}
+      <div className={`p-3.5 rounded-2xl border text-xs flex items-center gap-2.5 transition-colors ${
+        isLight 
+          ? 'bg-amber-50/80 border-amber-200 text-amber-900' 
+          : 'bg-amber-950/30 border-amber-500/30 text-amber-200'
+      }`}>
+        <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+        <span>
+          <strong>Note on Faculty Ratings:</strong> Some faculty ratings may be invalid or outdated. Please double-check or ask some of your seniors before making final section choices.
+        </span>
       </div>
 
       {/* Grid of Faculty Cards */}

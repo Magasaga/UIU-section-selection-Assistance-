@@ -317,18 +317,11 @@ export const CourseSelector: React.FC<CourseSelectorProps> = ({
                   }`} title={course.title}>
                     {course.title}
                   </h4>
-                  <p className={`text-[11px] mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                    {course.trimesterCategory}
-                  </p>
                 </div>
 
-                <div className={`mt-3 pt-2 border-t flex items-center justify-between ${
+                <div className={`mt-3 pt-2 border-t flex items-center justify-end ${
                   isLight ? 'border-slate-200' : 'border-slate-800/80'
                 }`}>
-                  <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {course.isLab ? '1 Day Lab' : '2 Days Theory'}
-                  </span>
-
                   {isSelected ? (
                     <button
                       onClick={() => onRemoveCourse(course.code)}
